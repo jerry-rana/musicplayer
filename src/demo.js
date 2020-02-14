@@ -5,8 +5,24 @@ import "react-jinke-music-player/assets/index.css";
 // import FaHeadphones from 'react-icons/lib/fa/headphones'
 import Switch from 'rc-switch'
 //import { createRandomNum, formatTime } from '../src/utils'
-
+import styled from 'styled-components';
 import Player from './components/player';
+
+const PlayerWrapper = styled.div`
+    max-width:350px;
+    height:600px;
+    margin:10px auto;
+    border:1px solid #ccc;
+    background:url("https://cdn.dribbble.com/users/1014698/screenshots/4754799/dribbble_music_player.png") no-repeat;
+    background-position: -128px center;
+    background-size: 1000px;
+    background: transparent;
+`;
+
+const Text = styled.div`
+    font-weight: 600;
+    color: #cecece;
+`;
 
 
 const createRandomNum = 0;
@@ -121,29 +137,66 @@ const audioList1 = [
 
 const audioList2 = [
   {
-    name: 'Bedtime Stories',
-    singer: 'Jay Chou',
+    name: 'Despacito',
+    singer: 'Luis Fonsi',
     cover:
-      'http://res.cloudinary.com/alick/image/upload/v1502375978/bedtime_stories_bywggz.jpg',
-    musicSrc:
-      'http://res.cloudinary.com/alick/video/upload/v1502375674/Bedtime_Stories.mp3',
-  },
-  {
-    name: 'Dorost Nemisham',
-    singer: 'Sirvan Khosravi',
-    cover:
-      'https://res.cloudinary.com/ehsanahmadi/image/upload/v1573758778/Sirvan-Khosravi-Dorost-Nemisham_glicks.jpg',
+      'http://res.cloudinary.com/alick/image/upload/v1502689731/Despacito_uvolhp.jpg',
     musicSrc: () => {
       return Promise.resolve(
-        'https://res.cloudinary.com/ehsanahmadi/video/upload/v1573550770/Sirvan-Khosravi-Dorost-Nemisham-128_kb8urq.mp3'
+        'http://res.cloudinary.com/alick/video/upload/v1502689683/Luis_Fonsi_-_Despacito_ft._Daddy_Yankee_uyvqw9.mp3'
       )
     },
+  },
+  {
+    name: 'Kalla Sohna Nai',
+    singer: 'Akhil',
+    cover:
+      'https://desinode.com/storage/images/250/8390.jpg',
+    musicSrc: () => {
+      return Promise.resolve(
+        'https://files1.mp3slash.xyz/stream/42d5e5a9868bfc8ac3c5eda5e642bb7f'
+      )
+    },
+  },
+  {
+    name: 'Puchda Hi Nahin',
+    singer: 'Neha Kakkar',
+    cover:
+      'https://desinode.com/storage/images/250/8338.jpg',
+    musicSrc:
+      'https://files1.mp3slash.xyz/stream/da9a64cd827e1f97e7097989618b8d95',
+  },
+  {
+    name: 'Relation',
+    singer: 'Nikk',
+    cover:
+      'https://desinode.com/storage/images/250/8411.jpg',
+    musicSrc:
+      'https://files1.mp3slash.xyz/stream/cf39cc26aad34d5a5b98d55b26d32fe8',
+  },
+  {
+    name: 'Ishq Tera',
+    singer: 'Guru Randhawa',
+    cover:
+      'https://desinode.com/storage/images/250/7861.jpg',
+    musicSrc:
+      'https://files1.mp3slash.xyz/stream/8c4c10139507f208e886d42196d73d05',
+  },
+  {
+    name: 'Impress',
+    singer: 'Ranjit Bawa',
+    cover:
+      'https://desinode.com/storage/images/250/8209.jpg',
+    musicSrc:
+      'https://files1.mp3slash.xyz/stream/673c7b6cb2d98775b76a653cabeebc73',
   }
 ]
 
+let currentTrackData ='';
+let progressBar = 0;
 const options = {
   //audio lists model
-  audioLists: audioList1,
+  audioLists: audioList2,
 
   //default play index of the audio player  [type `number` default `0`]
   defaultPlayIndex: 1,
@@ -152,7 +205,7 @@ const options = {
   // playIndex: 0,
 
   //color of the music player theme    [ type `string: 'light' or 'dark'  ` default 'dark' ]
-  theme: 'dark',
+  theme: 'light',
 
   // Specifies movement boundaries. Accepted values:
   // - `parent` restricts movement within the node's offsetParent
@@ -193,33 +246,33 @@ const options = {
 
   // play mode text config of the audio player
   playModeText: {
-    order: '顺序播放',
-    orderLoop: '列表循环',
-    singleLoop: '单曲循环',
-    shufflePlay: '随机播放',
+    order: 'order',
+    orderLoop: 'orderLoop',
+    orderLoop: 'orderLoop',
+    shufflePlay: 'shufflePlay',
   },
 
   //audio controller open text  [ type `String | ReactNode` default 'open']
-  openText: '打开',
+  openText: 'open',
 
   //audio controller close text  [ type `String | ReactNode` default 'close']
-  closeText: '关闭',
+  closeText: 'close',
 
   //audio theme switch checkedText  [ type `String | ReactNode` default '-']
-  checkedText: '开',
+  checkedText: '-',
 
   //audio theme switch unCheckedText [ type `String | ReactNode` default '-']
-  unCheckedText: '关',
+  unCheckedText: '-',
 
   // audio list panel show text of the playlist has no songs [ type `String` | ReactNode  default 'no music']
-  notContentText: '暂无音乐',
+  notContentText: 'no music',
 
-  panelTitle: '播放列表',
+  panelTitle: 'panelTitle',
 
   defaultPlayMode: 'order',
 
   //audio mode        mini | full          [type `String`  default `mini`]
-  mode: 'mini',
+  mode: 'full',
 
   /**
    * [ type `Boolean` default 'false' ]
@@ -231,7 +284,7 @@ const options = {
   autoPlay: true,
 
   //Whether you can switch between two modes, full => mini  or mini => full   [type 'Boolean' default 'true']
-  toggleMode: true,
+  toggleMode: false,
 
   //audio cover is show of the "mini" mode [type `Boolean` default 'true']
   showMiniModeCover: true,
@@ -264,13 +317,13 @@ const options = {
   showPlayMode: true,
 
   //theme toggle switch  display of the audio player panel   [type `Boolean` default `true`]
-  showThemeSwitch: true,
+  showThemeSwitch: false,
 
   //lyric display of the audio player panel   [type `Boolean` default `false`]
-  showLyric: true,
+  showLyric: false,
 
   //destroy player button display  [type `Boolean` default `false`]
-  showDestroy: true,
+  showDestroy: false,
 
   //Extensible custom content       [type 'Array' default '[]' ]
   extendsContent: [],
@@ -298,6 +351,7 @@ const options = {
   //audio play handle
   onAudioPlay(audioInfo) {
     console.log('audio playing', audioInfo)
+    currentTrackData = audioInfo;
   },
 
   //audio pause handle
@@ -329,6 +383,7 @@ const options = {
   //audio play progress handle
   onAudioProgress(audioInfo) {
     // console.log('audio progress',audioInfo);
+    progressBar = audioInfo;
   },
 
   //audio reload handle
@@ -384,6 +439,7 @@ const options = {
   // custom music player root node
   getContainer() {
     return document.body
+    // return document.querySelector('#playerWrapper');
   },
 
   /**
@@ -608,9 +664,11 @@ export default class Demo extends React.PureComponent {
   render() {
     const { params } = this.state
     console.log('params: ', params)
+
     return (
       <>
         <section className="settings">
+        <div>
           {/* <button onClick={this.onChangeToFirstAudioList}>
             change to first audio list ({audioList1.length})
           </button>
@@ -801,7 +859,7 @@ export default class Demo extends React.PureComponent {
               onChange={() => this.onChangeKey('spaceBar')}
             />
             spaceBar
-          </label>*/}
+          </label>
           <div style={{ padding: 20 }}>
             theme :{params.theme}
             <Switch
@@ -821,11 +879,26 @@ export default class Demo extends React.PureComponent {
                 this.onChangeKey(checked ? 'mini' : 'full')
               }
             />
+          </div> */}
           </div>
           <div>{this.renderCustomUI()}</div>
         </section>
-        <ReactJkMusicPlayer {...params} />
-        <Player playlist={audioList2} changePlayIndex={(e) => this.changePlayIndex(e)} />
+        {/* <ReactJkMusicPlayer {...params} />
+        <Player playlist={audioList2} currenttrack={currentTrackData} progressBar={progressBar} changePlayIndex={(e) => this.changePlayIndex(e)} /> */}
+
+        <div className="container">
+          <div className="row">
+            <div className="col-md-6">
+              <PlayerWrapper id="playerWrapper">
+                <ReactJkMusicPlayer {...params} />
+              </PlayerWrapper>
+            </div>
+            <div className="col-md-6">
+              <Player playlist={audioList2} currenttrack={currentTrackData} changePlayIndex={(e) => this.changePlayIndex(e)} />
+            </div>
+          </div>
+        </div>
+       
       </>
     )
   }
