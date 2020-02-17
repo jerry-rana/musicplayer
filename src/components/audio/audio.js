@@ -1,11 +1,24 @@
 import React from 'react';
-import { FaPlay, FaPause} from 'react-icons/fa';
+import { FaPlay, FaPause, FaRegWindowMinimize} from 'react-icons/fa';
 import { MdSkipNext, MdSkipPrevious, MdMoreVert } from 'react-icons/md';
+import Slider from 'react-rangeslider';
 import styled from 'styled-components';
 
 import Player from '../player';
 import Demo from '../../demo';
 
+const ToggleArrow = styled.div`
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    text-align:center;
+    margin: 0 auto;
+    cursor:pointer;
+    svg{
+        vertical-align: top;
+    }
+`;
 const AudioWrapper = styled.div`
     max-width: 350px;
     height:600px;
@@ -32,6 +45,9 @@ const AudioCover = styled.div`
         border-radius: 50%;
     }
 `;
+const AudioInfo = styled.div``;
+const AudioControls =styled.div`margin-top:24px;`;
+const AudioProgress = styled.div``;
 const PlayButton = styled.div`
     width:60px;
     height:60px;
@@ -44,6 +60,78 @@ const PlayButton = styled.div`
     margin:0 18px;
     svg{
        margin: 19px 0 0 0;
+    }
+`;
+
+const AudioMode = styled.div`
+        background:#fff;
+        position: absolute;
+        top: 53px;
+        width: 100%;
+        height: calc(100% - 53px);
+        left: 0;
+        padding: 35px 20px 0;
+        box-shadow: 0 -10px 24px -2px rgba(0, 0, 0, 0.3);
+        border-radius: 15px;
+        transition: all cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s;
+     &.miniMode{
+        text-align: left;
+        height:90px;
+        bottom:0;
+        top: auto;
+        left:0;
+        right:0;
+        margin:auto;
+        padding:0 20px;
+        border-top: 1px solid #dcdcdc;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+        ${AudioCover}{
+            width:60px;
+            height:60px;
+            display: inline-block;
+            vertical-align: top;
+            border: 3px solid transparent;
+        }
+        ${AudioInfo}{
+            display: inline-block;
+            vertical-align: top;
+            margin: 25px 15px 0;
+            width: 130px;
+            h6{
+               margin-bottom: 3px;
+            }
+        }
+        ${AudioProgress}{
+            display:none;
+        }
+        ${AudioControls}{
+            display: inline-block !important;
+            padding-top:8px;
+            margin-top: 10px;
+            button{
+                vertical-align: text-top;
+                margin-top: 8px;
+                &:nth-child(1){
+                    display:none;
+                }
+            }
+            ${PlayButton}{
+                background: transparent;
+                box-shadow: none;
+                width: 30px;
+                height: auto;
+                margin:0;
+                display: inline-block;
+                vertical-align: text-top;
+                svg{
+                    color: #212529 !important;
+                }
+            }
+        }
+
     }
 `;
 
@@ -102,15 +190,22 @@ class Audio extends React.Component {
         this.audioRef = React.createRef()
     }
     state = {
-        isPlaying: true,
+        isLoading: false,
+        isPlaying: false,
+        miniMode: true,
         currentTrack: 0,
-        progress: '',
-        duration: ''
+        progress: 0,
+        duration: 0,
+        volume: 10
     }
 
     componentDidMount(){
         let currTime = this.audioRef;
         console.log(currTime)
+       
+    }
+    togglePlayerMode = () => {
+        this.setState(ps => ({miniMode: !ps.miniMode}));
     }
     playPreview = (e) => {
       this.setState({
@@ -121,7 +216,8 @@ class Audio extends React.Component {
     playAudio = () => {
         let audRef = this.audioRef.current;
         this.state.isPlaying ? audRef.pause() : audRef.play();
-        this.setState(ps => ({isPlaying: !ps.isPlaying}))
+        this.setState(ps => ({isPlaying: !ps.isPlaying}));
+        (audRef.readyState>0 && audRef.readyState<4) ? console.log("loading...") : console.log("playing...");
     }
     onTrackEnded = () => {
         let len = this.audio.audioList.length-1;
@@ -131,10 +227,16 @@ class Audio extends React.Component {
     }
     seekAudio = (e) => {
         let audRef = this.audioRef.current;
-        audRef.currentTime = e.target.value;
+        (audRef.currentTime > 0) ? audRef.currentTime = e : console.log('Something went wrong.')
+    }
+    seekVolume = (e) => {
+        let audRef = this.audioRef.current;
+        audRef.volume = e / 10;
+        this.setState({volume: e});
+        console.log(e / 10)
     }
     changeTrack = (index) => {
-        this.setState({currentTrack: index});
+        this.setState({isPlaying: true, currentTrack: index});
     }
     nextTrack = () => {
         let len = this.audio.audioList.length-1;
@@ -152,48 +254,70 @@ class Audio extends React.Component {
     }
 
     render() {
-        const { isPlaying, currentTrack, progress, duration } = this.state;
+        const { isPlaying, miniMode, currentTrack, progress, duration, volume } = this.state;
         const { name, singer, cover, musicSrc } = this.audio.audioList[currentTrack];
         const nextTrack = this.audio.audioList[this.getNextTrack()];
+        console.log(isPlaying)
         return (<>
-        <div className="container my-5">
+        <div className="container">
            <div className="row">
-           <div className="col-md-6">
-           <AudioWrapper>
-                <Player playlist={this.audio} changeTrack={(track)=> this.changeTrack(track)} />
-           </AudioWrapper> 
-           </div>    
-               <div className="col-md-6">
+               <div className="col-md-12">
             <AudioWrapper>
-                   <div className="d-flex justify-content-between">
+                <Player playlist={this.audio} changeTrack={(track)=> this.changeTrack(track)} />
+                    <div className="d-flex justify-content-between">
                        <Text></Text>
                        <MdMoreVert color={"#868585"} size={"1.4em"} />
                    </div>
+                <AudioMode className={miniMode ? 'miniMode' : ''}>
+                    <ToggleArrow onClick={this.togglePlayerMode}>
+                        <FaRegWindowMinimize color={"#ccc"} size={"1.4em"}  />
+                    </ToggleArrow>
                 <AudioCover className="my-3 mx-auto">
                     <img src={cover} className="anim" style={{animationPlayState: isPlaying ? "running" : "paused" }} />
                 </AudioCover>
-                <h6>{name}</h6>
-                <Text>{singer}</Text>
 
-                <AudioPlayer onTimeUpdate={(e)=>this.playPreview(e)} onEnded={this.onTrackEnded} ref={this.audioRef} autoPlay src={musicSrc}></AudioPlayer>
+                <AudioInfo>
+                    <h6>{name}</h6>
+                    <Text>{singer}</Text>
+                </AudioInfo>
 
-                <div className="d-flex justify-content-between">
-                <Text>{(parseInt(progress / 60) % 60) + ':' + (parseInt(progress % 60))}</Text><Text>{(parseInt(duration / 60) % 60) + ':' + (parseInt(duration % 60))}</Text>
-                </div>
-                    <input type="range" min="0" max={duration} value={progress} onChange={(e)=> this.seekAudio(e)} />
-                <br/>
-                <div className="d-flex justify-content-center mt-2">
+                <AudioPlayer onTimeUpdate={(e)=>this.playPreview(e)} onEnded={this.onTrackEnded} ref={this.audioRef} src={musicSrc} preload="none"></AudioPlayer>
+
+                <AudioProgress>
+                    <div className="d-flex justify-content-between">
+                    <Text>{(parseInt(progress / 60) % 60) + ':' + (parseInt(progress % 60))}</Text><Text>{(parseInt(duration / 60) % 60) + ':' + (parseInt(duration % 60))}</Text>
+                    </div>
+                        <Slider
+                        min={0}
+                        max={parseFloat(duration)}
+                        value={parseFloat(volume)}
+                        //onChangeStart={this.handleChangeStart}
+                        onChange={(e)=> this.seekAudio(e)}
+                        //onChangeComplete={this.handleChangeComplete}
+                        />
+                </AudioProgress>
+
+                <AudioControls className="d-flex justify-content-center">
                     <button className="btn" onClick={this.prevTrack}><MdSkipPrevious size={"1.8em"} /></button>
                     <PlayButton onClick={this.playAudio}>{isPlaying ? <FaPause color={"#fff"} size={"1.4em"} /> : <FaPlay color={"#fff"} size={"1.4em"} />}</PlayButton>
                     <button className="btn" onClick={this.nextTrack}><MdSkipNext size={"1.8em"} /></button>
-                </div>
-                {(this.audio.audioList.length-1 > currentTrack) ? 
+                </AudioControls>
+                    <Slider
+                        min={0}
+                        max={10}
+                        value={10}
+                        //onChangeStart={this.handleChangeStart}
+                        onChange={(e)=> this.seekVolume(e)}
+                        //onChangeComplete={this.handleChangeComplete}
+                        />
+                {/* {(this.audio.audioList.length-1 > currentTrack) ? 
                     <div className="d-flex mt-4 pt-3">
                         <div><img src={nextTrack.cover} style={{width: "50px", borderRadius: "8px"}} /></div>
                         <div className="ml-3 align-self-center text-left" onClick={() => this.changeTrack(currentTrack+1)}><Text>Next Track</Text><h6 className="font-weight-bold mb-0">{nextTrack.name}</h6></div>
                         <div><small></small></div>
                     </div>
-                    : ''}
+                    : ''} */}
+                </AudioMode>
             </AudioWrapper>
                 </div>
             </div> 
