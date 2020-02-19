@@ -2,10 +2,6 @@ import React from 'react';
 import { FaPlus, FaMusic } from 'react-icons/fa';
 import styled from 'styled-components'
 
-const Text = styled.div`
-    font-weight: 600;
-    color: #cecece;
-`;
 export default class Playlists extends React.Component {
 
     render() {

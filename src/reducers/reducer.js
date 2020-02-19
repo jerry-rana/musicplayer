@@ -41,7 +41,31 @@ const audioList = [
         musicSrc: 'https://files1.mp3slash.xyz/stream/673c7b6cb2d98775b76a653cabeebc73',
       }
 ]
-const reducer = (state=audioList, action) => {
+
+
+
+const audio = {
+    currentTrack: 4
+}
+
+
+// const playTrack = (name, duration) => {
+//     return {
+//       type: "ADD_SONG",
+//       payload:{
+//         name: name,
+//         duration: duration
+//       }
+//     }
+//   }
+
+
+const reducer = (state=audio, action) => {
+    if(action.type == "CHANGE_TRACK"){
+        return {
+            currentTrack: action.payload
+        }
+    }
     return state;
 }
 

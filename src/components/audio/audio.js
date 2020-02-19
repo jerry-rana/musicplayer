@@ -284,15 +284,20 @@ class Audio extends React.Component {
 
     render() {
         const { isPlaying, miniMode, currentTrack, progress, duration, volume } = this.state;
-        const { name, singer, cover, musicSrc } = this.audio.audioList[currentTrack];
+
+        // prepare the single track info
+        //const { name, singer, cover, musicSrc } = this.props;
+        const { name, singer, cover, musicSrc } = this.audio.audioList[this.props.currentTrack];
+
+
        // const nextTrack = this.audio.audioList[this.getNextTrack()];
-       console.table(this.props)
+       console.log(this.props)
         return (<>
         <div className="container">
            <div className="row">
                <div className="col-md-12">
             <AudioWrapper>
-                <Player audioList={this.props} duration={duration} changeTrack={(track)=> this.changeTrack(track)} />
+                <Player audioList={this.audio} duration={duration} changeTrack={(track)=> this.changeTrack(track)} />
                     <div className="d-none justify-content-between">
                        <Text></Text>
                        <MdMoreVert color={"#868585"} size={"1.4em"} />
@@ -347,6 +352,7 @@ class Audio extends React.Component {
                         />
                         <FaVolumeUp color={"#909090"} size={"1.2em"}/>
                     </div>
+                    <button onClick={() => this.props.changeTrack(2)}>Change track</button>
                 {/* {(this.audio.audioList.length-1 > currentTrack) ? 
                     <div className="d-flex mt-4 pt-3">
                         <div><img src={nextTrack.cover} style={{width: "50px", borderRadius: "8px"}} /></div>
@@ -371,4 +377,10 @@ const mapStateToProps = (state) => {
     }
   }
 
-export default connect(mapStateToProps)(Audio);
+const mapDispatchToProps = (dispatch) => {
+    return {
+        changeTrack: (index) => {dispatch({type: "CHANGE_TRACK", payload:index })}
+    }
+}  
+
+export default connect(mapStateToProps, mapDispatchToProps)(Audio);
