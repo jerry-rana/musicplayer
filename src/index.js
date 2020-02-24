@@ -10,13 +10,17 @@ import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 
-import { createStore } from 'redux';
+import { createStore, combineReducers, applyMiddleware, compose } from 'redux';
 import { Provider } from  'react-redux';
-import reducer from './reducers/reducer';
+import {songsLibrary, reducer} from './reducers/reducer';
 
-const store = createStore(reducer);
+const composeEnhancers = (typeof window !== 'undefined' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || compose;
 
-
+const reducers = combineReducers({
+    songsLibrary: songsLibrary,
+    reducer: reducer
+});
+const store = createStore(reducers, composeEnhancers(applyMiddleware()));
 
 ReactDOM.render(
     <Provider store={store}>

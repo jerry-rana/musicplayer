@@ -1,6 +1,8 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
 import { GiHamburgerMenu } from 'react-icons/gi';
+import CustomScroll from 'react-custom-scroll';
 
 import Library from '../library';
 import Playlists from '../playlists';
@@ -44,7 +46,13 @@ const PlayerHeader = styled.div`
     }
   }
     `;
-
+const AllSongsWrapper = styled.div`
+    height: 405px;
+    margin-top: 20px;
+    h6{
+        color: #565656;
+    }
+`;
 
 
 class Player extends React.Component{
@@ -62,26 +70,22 @@ class Player extends React.Component{
     }
 
     render() {
-      const { audioList } = this.props.audioList;
-      const allSongs = audioList.map((song, e) => {
-        return <>
-            <div className="d-flex mb-3 justify-content-between" key={e}>
-              <div>
+      const { songsLibrary } = this.props;
+      const allSongs = songsLibrary.map((song, e) => {
+        return <div className="d-flex mb-3 justify-content-between" key={e}>
+                <div>
                   <div className="align-self-center text-left" onClick={() => this.props.changeTrack(e)}>
-                    <img src={song.cover} className="align-top" alt="" style={{width: "50px", borderRadius: "8px"}} />
+                    <img src={song.cover} className="align-top" alt="" style={{ width: "50px", borderRadius: "8px" }} />
                     <div className="d-inline-block ml-3">
                       <h6 className="font-weight-bold mb-0">{song.name}</h6><Text>{song.singer}</Text>
                     </div>
                   </div>
-             </div>
-             <div className="align-self-end pr-3 pb-2">
-               <Text>
-                 {(parseInt(this.props.duration / 60) % 60) + ':' + (parseInt(this.props.duration % 60))}
-               </Text>
+                </div>
+                <div className="align-self-end pr-3 pb-2">
+                  <Text>{song.duration}</Text>
+                </div>
               </div>
-            </div>
-            </>;
-        })
+        });
       const tabList = [
         {
             tabLink: [
@@ -90,13 +94,14 @@ class Player extends React.Component{
                 {link: "Songs"}
             ],
             tabContent: [
-                {content: <Library audioList={this.props.audioList} allSongs={allSongs} />},
-                {content: <Playlists audioList={this.props.audioList} />},
-                {content: <div className="mt-3 mb-4">{allSongs}</div>},
+                {content: <Library allSongs={allSongs}/>},
+                {content: <Playlists />},
+                {content: <AllSongsWrapper className="mt-3 mb-4"><CustomScroll heightRelativeToParent="calc(100% - 0px)">{allSongs}</CustomScroll></AllSongsWrapper>},
               ]
         } 
       ]
       const [{ tabLink, tabContent }] = tabList;
+      
         return (<>
           <PlayerWrapper>
             <PlayerHeader>
@@ -121,4 +126,13 @@ class Player extends React.Component{
         </>);
     }
 }
-export default Player;
+
+const mapStateToProps = (library) => {
+    return library;
+}
+const mapDispatchToProps = (dispatch) => {
+  return {
+      changeTrack: (index) => {dispatch({type: "CHANGE_TRACK", payload: index})}
+  }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Player);

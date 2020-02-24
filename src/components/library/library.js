@@ -1,4 +1,5 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
 import Carousel from '../carousel';
 import CustomScroll from 'react-custom-scroll';
@@ -20,17 +21,17 @@ const AllSongsWrapper = styled.div`
     }
 `;
 
-export default class Library extends React.Component {
+class Library extends React.Component {
     
     render() {
-        const { audioList:{audioList}, allSongs } = this.props;
-            const setting = {
+        const { songsLibrary, allSongs } = this.props;
+        const setting = {
               dragSpeed: 1.25,
               itemWidth: 100,
               itemHeight: 100,
               itemSideOffsets: 5,
             }
-            const itemStyle = {
+        const itemStyle = {
               width: `${setting.itemWidth}px`,
               height: `${setting.itemHeight}px`,
               margin: `0px ${setting.itemSideOffsets}px`
@@ -38,9 +39,9 @@ export default class Library extends React.Component {
         return(<>
             <Text className="text-left">Recently Added</Text>
             <RecentlyAdded className="mt-3 mb-4">
-                <Carousel _data={audioList} {...setting}>
+                <Carousel _data={songsLibrary} {...setting}>
                     {
-                        audioList.map((i, _i) => (
+                        songsLibrary.map((i, _i) => (
                             <div
                                 key={_i}
                                 className='item'
@@ -55,9 +56,20 @@ export default class Library extends React.Component {
             <Text className="text-left">All Songs</Text>
             <AllSongsWrapper>
                 <CustomScroll heightRelativeToParent="calc(100% - 0px)">
-                    {allSongs}
+                   { allSongs }
                 </CustomScroll>
             </AllSongsWrapper>
         </>);
     }
 }
+
+const mapStateToProps = (library) => {
+    return library;
+}
+const mapDispatchToProps = (dispatch) => {
+    return {
+        changeTrack: (index) => {dispatch({type: "CHANGE_TRACK", payload: index})}
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Library);

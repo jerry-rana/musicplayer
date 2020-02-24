@@ -162,225 +162,227 @@ const AudioMode = styled.div`
     }
 `;
 
-const audioList = [
-    {
-        name: 'Despacito',
-        singer: 'Luis Fonsi',
-        cover: 'http://res.cloudinary.com/alick/image/upload/v1502689731/Despacito_uvolhp.jpg',
-        // musicSrc: () => {
-        //   return Promise.resolve(
-        //     'http://res.cloudinary.com/alick/video/upload/v1502689683/Luis_Fonsi_-_Despacito_ft._Daddy_Yankee_uyvqw9.mp3'
-        //   )
-        // },
-        musicSrc: 'http://res.cloudinary.com/alick/video/upload/v1502689683/Luis_Fonsi_-_Despacito_ft._Daddy_Yankee_uyvqw9.mp3'
-      },
-      {
-        name: 'Kalla Sohna Nai',
-        singer: 'Akhil',
-        cover: 'https://desinode.com/storage/images/250/8390.jpg',
-        musicSrc: 'https://files1.mp3slash.xyz/stream/42d5e5a9868bfc8ac3c5eda5e642bb7f'
-      },
-      {
-        name: 'Puchda Hi Nahin',
-        singer: 'Neha Kakkar',
-        cover: 'https://desinode.com/storage/images/250/8338.jpg',
-        musicSrc: 'https://files1.mp3slash.xyz/stream/da9a64cd827e1f97e7097989618b8d95',
-      },
-      {
-        name: 'Relation',
-        singer: 'Nikk',
-        cover: 'https://desinode.com/storage/images/250/8411.jpg',
-        musicSrc: 'https://files1.mp3slash.xyz/stream/cf39cc26aad34d5a5b98d55b26d32fe8',
-      },
-      {
-        name: 'Ishq Tera',
-        singer: 'Guru Randhawa',
-        cover: 'https://desinode.com/storage/images/250/7861.jpg',
-        musicSrc: 'https://files1.mp3slash.xyz/stream/8c4c10139507f208e886d42196d73d05',
-      },
-      {
-        name: 'Impress',
-        singer: 'Ranjit Bawa',
-        cover: 'https://desinode.com/storage/images/250/8209.jpg',
-        musicSrc: 'https://files1.mp3slash.xyz/stream/673c7b6cb2d98775b76a653cabeebc73',
-      }
-]
-
-
 class Audio extends React.Component {
-    constructor(){
-        super()
-        this.audio = {
-            audioList
-        }
-        this.currTime = 0
-
-        this.audioRef = React.createRef()
-    }
     state = {
         isLoading: false,
         isPlaying: false,
-        miniMode: true,
-        currentTrack: 0,
+        miniMode: false,
         progress: 0,
         duration: 0,
+        autoPlay: true,
         volume: 70
     }
 
     componentDidMount(){
-        let currTime = this.audioRef;
-        console.log(currTime)
-       
+        const audio = this.audioRef;
+        audio.addEventListener('play', (e) => {
+           this.props.onPlay(e);
+       })
+
     }
-    togglePlayerMode = () => {
-        this.setState(ps => ({miniMode: !ps.miniMode}));
+
+    playAudio = () => {
+        this.state.isPlaying ? this.audioRef.pause() : this.audioRef.play();
+        this.setState(ps => ({ isPlaying: !ps.isPlaying }));
     }
-    playPreview = (e) => {
-      this.setState({ ...this.state,
-           progress: this.audioRef.current.currentTime, 
-           duration: this.audioRef.current.duration
+
+    onTimeUpdate = (e) => {
+        this.setState({
+            ...this.state,
+            isLoading: ((this.state.progress === 0) ? true : false),
+            progress: e
         })
     }
-    playAudio = () => {
-        let audRef = this.audioRef.current;
-        this.state.isPlaying ? audRef.pause() : audRef.play();
-        this.setState(ps => ({isPlaying: !ps.isPlaying}));
-        (audRef.readyState>0 && audRef.readyState<4) ? console.log("loading...") : console.log("playing...");
-        console.log('clicked...')
+
+    togglePlayerMode = () => {
+        this.setState(ps => ({ miniMode: !ps.miniMode }));
     }
-    onTrackEnded = () => {
-        let len = this.audio.audioList.length-1;
-        let { currentTrack } = this.state;
-        // this.setState(ps => ({isPlaying: false}))
-        this.setState({currentTrack: (len > currentTrack) ? currentTrack+1 : currentTrack});
-    }
+
     seekAudio = (e) => {
-        let audRef = this.audioRef.current;
-        (audRef.currentTime > 0) ? audRef.currentTime = e : console.log('Something went wrong.')
+        (this.audioRef.currentTime > 0) ? this.audioRef.currentTime = e : console.log('Something went wrong.')
     }
+
     seekVolume = (e) => {
-        let audRef = this.audioRef.current;
-        audRef.volume = e / 100;
-        this.setState({volume: e});
-        console.log(e)
+        this.audioRef.volume = e / 100;
+        this.setState({ volume: e });
     }
-    changeTrack = (index) => {
-        this.setState({isPlaying: true, currentTrack: index});
+
+    onTrackEnded = () => {
+        const { songsLibrary, reducer: { currentTrack } } = this.props;
+        let len = songsLibrary.length - 1;
+        let nxTrack = (len > currentTrack) ? currentTrack + 1 : currentTrack;
+        this.props.changeTrack(nxTrack);
+        this.setState({ isPlaying: true});
     }
+
     nextTrack = () => {
-        let len = this.audio.audioList.length-1;
-        let { currentTrack } = this.state;
-        this.setState({currentTrack: (len > currentTrack) ? currentTrack+1 : currentTrack});
+        const { songsLibrary, reducer: { currentTrack } } = this.props;
+        let len = songsLibrary.length - 1;
+        let nxTrack = (len > currentTrack) ? currentTrack + 1 : currentTrack;
+        this.props.changeTrack(nxTrack);
+        this.setState({ isPlaying: true});
     }
-    getNextTrack = () => {
-        let len = this.audio.audioList.length-1;
-        let { currentTrack } = this.state;
-        return (len > currentTrack) ? currentTrack+1 : currentTrack;
-    }
+
     prevTrack = () => {
-        let { currentTrack } = this.state;
-        this.setState({currentTrack: (0 < currentTrack) ? currentTrack-1 : currentTrack});
+        const { reducer: { currentTrack } } = this.props;
+        let nxTrack = (0 < currentTrack) ? currentTrack - 1 : currentTrack;
+        this.props.changeTrack(nxTrack);
+        this.setState({ isPlaying: true });
     }
+    
+    // playPreview = (e) => {
+    //   this.setState({ ...this.state,
+    //        progress: this.audioRef.current.currentTime, 
+    //        duration: this.audioRef.current.duration
+    //     })
+    // }
+    // playAudio = () => {
+    //     let audRef = this.audioRef.current;
+    //     this.state.isPlaying ? audRef.pause() : audRef.play();
+    //     this.setState(ps => ({isPlaying: !ps.isPlaying}));
+    //     (audRef.readyState>0 && audRef.readyState<4) ? console.log("loading...") : console.log("playing...");
+    //     console.log('clicked...')
+    // }
+    // onTrackEnded = () => {
+    //     let len = this.audio.audioList.length-1;
+    //     let { currentTrack } = this.state;
+    //     // this.setState(ps => ({isPlaying: false}))
+    //     this.setState({currentTrack: (len > currentTrack) ? currentTrack+1 : currentTrack});
+    // }
+    // seekAudio = (e) => {
+    //     let audRef = this.audioRef.current;
+    //     (audRef.currentTime > 0) ? audRef.currentTime = e : console.log('Something went wrong.')
+    // }
+    // seekVolume = (e) => {
+    //     let audRef = this.audioRef.current;
+    //     audRef.volume = e / 100;
+    //     this.setState({volume: e});
+    //     console.log(e)
+    // }
+    // changeTrack = (index) => {
+    //     this.setState({isPlaying: true, currentTrack: index});
+    // }
+    // nextTrack = () => {
+    //     let len = this.audio.audioList.length-1;
+    //     let { currentTrack } = this.state;
+    //     this.setState({currentTrack: (len > currentTrack) ? currentTrack+1 : currentTrack});
+    // }
+    // getNextTrack = () => {
+    //     let len = this.audio.audioList.length-1;
+    //     let { currentTrack } = this.props;
+    //     return (len > currentTrack) ? currentTrack+1 : currentTrack;
+    // }
+    // prevTrack = () => {
+    //     let { currentTrack } = this.state;
+    //     this.setState({currentTrack: (0 < currentTrack) ? currentTrack-1 : currentTrack});
+    // }
 
     render() {
-        const { isPlaying, miniMode, currentTrack, progress, duration, volume } = this.state;
+        const { miniMode, isPlaying, isLoading, progress, autoPlay, volume } = this.state; // component state
+        const { songsLibrary, reducer:{currentTrack} } = this.props; // redux state
 
         // prepare the single track info
-        //const { name, singer, cover, musicSrc } = this.props;
-        const { name, singer, cover, musicSrc } = this.audio.audioList[this.props.currentTrack];
+        const { name, singer, duration, cover, musicSrc } = songsLibrary[currentTrack];
 
-
-       // const nextTrack = this.audio.audioList[this.getNextTrack()];
-       console.log(this.props)
+      console.log(isPlaying)
         return (<>
-        <div className="container">
-           <div className="row">
-               <div className="col-md-12">
-            <AudioWrapper>
-                <Player audioList={this.audio} duration={duration} changeTrack={(track)=> this.changeTrack(track)} />
-                    <div className="d-none justify-content-between">
-                       <Text></Text>
-                       <MdMoreVert color={"#868585"} size={"1.4em"} />
-                   </div>
-                <AudioMode className={miniMode ? 'miniMode' : ''}>
-                    <ToggleArrow onClick={this.togglePlayerMode}>
-                        <FaMinus className="FaMinus" color={"#ccc"} size={"1.4em"} />
-                        <FaMinus className="FaMinus" color={"#ccc"} size={"1.4em"} />
-                    </ToggleArrow>
-                <AudioCover className="my-3">
-                    <img src={cover} className="anim" style={{animationPlayState: isPlaying ? "running" : "paused" }} alt="" />
-                </AudioCover>
+            <div className="container">
+                <div className="row">
+                    <div className="col-md-12">
+                        <AudioWrapper>
+                            <Player />
+                            <div className="d-none justify-content-between">
+                                <Text></Text>
+                                <MdMoreVert color={"#868585"} size={"1.4em"} />
+                            </div>
+                            <AudioMode className={miniMode ? '' : 'miniMode'}>
+                                <ToggleArrow onClick={this.togglePlayerMode}>
+                                    <FaMinus className="FaMinus" color={"#ccc"} size={"1.4em"} />
+                                    <FaMinus className="FaMinus" color={"#ccc"} size={"1.4em"} />
+                                </ToggleArrow>
+                                <AudioCover className="my-3">
+                                    <img src={cover} className="anim" style={{ animationPlayState: isPlaying && !isLoading ? "running" : "paused" }} alt="" />
+                                </AudioCover>
+                                <AudioInfo>
+                                    <h6>{name}</h6>
+                                    <Text>{isLoading ? 'Loading...' : singer}</Text>
+                                </AudioInfo>
+                               
+                                <AudioPlayer
+                                    onTimeUpdate={() => this.onTimeUpdate(this.audioRef.currentTime)}
+                                    onEnded={this.onTrackEnded}
+                                    ref={(ref) => { this.audioRef = ref; }}
+                                    src={musicSrc}
+                                    controls={false}
+                                    autoPlay={autoPlay}
+                                    preload="none">
+                                </AudioPlayer>
 
-                <AudioInfo>
-                    <h6>{name}</h6>
-                    <Text>{singer}</Text>
-                </AudioInfo>
-
-                <AudioPlayer onTimeUpdate={(e)=>this.playPreview(e)} onEnded={this.onTrackEnded} ref={this.audioRef} src={musicSrc} preload="none"></AudioPlayer>
-
-                <AudioProgress>
-                    <div className="d-flex justify-content-between">
-                    <Text>{(parseInt(progress / 60) % 60) + ':' + (parseInt(progress % 60))}</Text><Text>{(parseInt(duration / 60) % 60) + ':' + (parseInt(duration % 60))}</Text>
+                                <AudioProgress>
+                                    <div className="d-flex justify-content-between">
+                                        <Text>{(parseInt(progress / 60) % 60) + ':' + (parseInt(progress % 60))}</Text>
+                                        <Text>{parseFloat(duration)}</Text>
+                                    </div>
+                                    <Slider
+                                        min={0}
+                                        max={parseFloat(duration * 60)}
+                                        value={parseInt(progress)}
+                                        tooltip={false}
+                                        //onChangeStart={this.handleChangeStart}
+                                        onChange={(e) => this.seekAudio(e)}
+                                        //onChangeComplete={this.handleChangeComplete}
+                                    />
+                                </AudioProgress>
+                                
+                                <AudioControls className="d-flex justify-content-center">
+                                    <button className="btn" onClick={this.prevTrack}><FaBackward size={"1.4em"} /></button>
+                                    <PlayButton onClick={this.playAudio}>
+                                        {
+                                            isPlaying ? <FaPause size={"1.8em"} />
+                                                : <FaPlay size={"1.8em"} />
+                                        }
+                                    </PlayButton>
+                                    <button className="btn" onClick={this.nextTrack}><FaForward size={"1.4em"} /></button>
+                                </AudioControls>
+                                
+                                <div className="d-flex justify-content-around align-items-center volume-control">
+                                    <FaVolumeOff color={"#909090"} size={"1em"} />
+                                    <Slider
+                                        className="w-100 mx-3"
+                                        min={0}
+                                        max={100}
+                                        value={volume}
+                                        tooltip={false}
+                                        //onChangeStart={this.handleChangeStart}
+                                        onChange={(e) => this.seekVolume(e)}
+                                        //onChangeComplete={this.handleChangeComplete}
+                                    />
+                                    <FaVolumeUp color={"#909090"} size={"1.2em"} />
+                                </div>
+                            </AudioMode>
+                        </AudioWrapper>
                     </div>
-                        <Slider
-                        min={0}
-                        max={parseFloat(duration)}
-                        value={parseFloat(progress)}
-                        tooltip={true}
-                        //onChangeStart={this.handleChangeStart}
-                        onChange={(e)=> this.seekAudio(e)}
-                        //onChangeComplete={this.handleChangeComplete}
-                        />
-                </AudioProgress>
-
-                <AudioControls className="d-flex justify-content-center">
-                    <button className="btn" onClick={this.prevTrack}><FaBackward size={"1.4em"} /></button>
-                    <PlayButton onClick={this.playAudio}>{isPlaying ? <FaPause size={"1.8em"} /> : <FaPlay size={"1.8em"} />}</PlayButton>
-                    <button className="btn" onClick={this.nextTrack}><FaForward size={"1.4em"} /></button>
-                </AudioControls>
-                    <div className="d-flex justify-content-around align-items-center volume-control">
-                        <FaVolumeOff color={"#909090"} size={"1em"}/>
-                    <Slider
-                        className="w-100 mx-3"
-                        min={0}
-                        max={100}
-                        value={volume}
-                        tooltip={true}
-                        //onChangeStart={this.handleChangeStart}
-                        onChange={(e)=> this.seekVolume(e)}
-                        //onChangeComplete={this.handleChangeComplete}
-                        />
-                        <FaVolumeUp color={"#909090"} size={"1.2em"}/>
-                    </div>
-                    <button onClick={() => this.props.changeTrack(2)}>Change track</button>
-                {/* {(this.audio.audioList.length-1 > currentTrack) ? 
-                    <div className="d-flex mt-4 pt-3">
-                        <div><img src={nextTrack.cover} style={{width: "50px", borderRadius: "8px"}} /></div>
-                        <div className="ml-3 align-self-center text-left" onClick={() => this.changeTrack(currentTrack+1)}><Text>Next Track</Text><h6 className="font-weight-bold mb-0">{nextTrack.name}</h6></div>
-                        <div><small></small></div>
-                    </div>
-                    : ''} */}
-                </AudioMode>
-            </AudioWrapper>
                 </div>
-            </div> 
-        </div>
+            </div>
         </>);
     }
 }
 
-
-
-const mapStateToProps = (state) => {
+const mapStateToProps = (library) => {
     return {
-       ...state
-    }
+         ...library
+        }
   }
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        changeTrack: (index) => {dispatch({type: "CHANGE_TRACK", payload:index })}
+        changeTrack: (index) => {dispatch({type: "CHANGE_TRACK", payload:index })},
     }
 }  
-
 export default connect(mapStateToProps, mapDispatchToProps)(Audio);
+
+
+
+Audio.defaultProps = {
+    onPlay: () => {}
+}
