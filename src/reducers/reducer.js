@@ -1,5 +1,12 @@
 const audioList = [
     {
+      name: 'Shopping',
+      singer: 'Jass Manak',
+      duration: '2.36',
+      cover: 'https://www.desinode.com/storage/images/250/8589.jpg',
+      musicSrc: 'https://files1.mp3slash.xyz/stream/0346ff1af928fc5199872ed03d30ab19'
+    },
+    {
         name: 'Despacito',
         singer: 'Luis Fonsi',
         duration: '4.41',
@@ -74,37 +81,58 @@ const audio = {
     currentTrack: 1
 }
 
-// const playTrack = (name, duration) => {
-//     return {
-//       type: "ADD_SONG",
-//       payload:{
-//         name: name,
-//         duration: duration
-//       }
-//     }
-//   }
+const playlists = {}
 
 
 const songsLibrary = (library=audioList, action) => {
   return library;
 }
 
-const reducer = (state=audio, action) => {
-    if(action.type === "CHANGE_TRACK"){
+const reducer = (state=audio, {type, payload}) => {
+    if(type === "CHANGE_TRACK"){
         return {
-            currentTrack: action.payload
+            currentTrack: payload
         }
     }
     return state;
 }
 
-// const audioProgress = (progress=audio.progress, action) => {
-//   console.log(progress)
-//   if(action.type == "PROGRESS"){
-//     return {
+const addPlaylist = (state=playlists, {type, playlistName, payload}) => {
+  switch(type){
+    case 'ADD_TO_PLAYLIST': 
 
-//     }
+      if(Object.keys(state).length > 0 && state.hasOwnProperty(playlistName)) {
+        // var match = state[playlistName].findIndex((item) => {
+        //     return item.name===payload.name;
+        //   })
+
+        //   if(match!==-1){
+        //     state[playlistName].splice(match, 1)
+        //   }else{
+        //     return { [playlistName]: [...state[playlistName], payload] }
+        //   }
+         return { [playlistName]: payload }
+
+      }else{
+        return { ...state, [playlistName]: payload }
+      }
+
+    case 'CANCEL_PLAYLIST':
+        const {[playlistName]: removed,  ...rest} = state;  
+        return rest;
+      
+
+      default:
+      return state;
+  }
+}
+
+// const cancelPlaylist = ({type, playlistName}) => {
+//   console.log('cancel playlist')
+//   if(type === 'CANCEL_PLAYLIST'){
+//     return 'state';
 //   }
+//   return {}
 // }
 
-export { songsLibrary, reducer };
+export { songsLibrary, reducer, addPlaylist };

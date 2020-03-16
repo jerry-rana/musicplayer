@@ -284,7 +284,6 @@ class Audio extends React.Component {
         // prepare the single track info
         const { name, singer, duration, cover, musicSrc } = songsLibrary[currentTrack];
 
-      console.log(isPlaying)
         return (<>
             <div className="container">
                 <div className="row">
