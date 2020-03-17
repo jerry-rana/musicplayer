@@ -72,11 +72,17 @@ class Playlists extends React.Component {
        this.props.addToPlaylist(this.state.playlistName, selectedSongs)
       }
 
+    handleCancelBtn = () => {
+        this.toggleDrawer();
+        this.setState({selectedSongs: []});
+        this.props.cancelPlaylist(this.state.playlistName);
+      }
+
     render() {
         const { drawer, songsDrawer, playlistName, selectedSongs } = this.state;
         const { songsLibrary, addPlaylist } = this.props;
         
-        console.table (this.state.selectedSongs)
+        console.log (this.state.selectedSongs)
         
         const allSongs = songsLibrary.map((song, key) => {
             return <div className="d-flex mb-3 justify-content-between" key={song.name}>
@@ -142,9 +148,9 @@ class Playlists extends React.Component {
             </CustomScroll>
             </div>
 
-            <PlaylistDrawer className={songsDrawer?'': 'closed'}>
+            {/* <PlaylistDrawer className={songsDrawer?'': 'closed'}>
                 <div className="d-flex justify-content-between">
-                    <Text onClick={() => { this.toggleDrawerSongs(); this.setState({checked: false}); this.props.cancelPlaylist(playlistName) }}>Cancel</Text>
+                    <Text onClick={ this.handleCancelBtn }>Cancel</Text>
                     <Text>Done</Text>
                 </div>
                 <div className="d-flex text-left mt-3 mb-3">
@@ -166,11 +172,11 @@ class Playlists extends React.Component {
                         {allSongs}
                     </CustomScroll>
                 </AllSongsWrapper>
-            </PlaylistDrawer>
+            </PlaylistDrawer> */}
 
             <PlaylistDrawer className={drawer?'': 'closed'}>
                 <div className="d-flex justify-content-between">
-                    <Text onClick={() => { this.toggleDrawer(); this.props.cancelPlaylist(playlistName) }}>Cancel</Text>
+                    <Text onClick={this.handleCancelBtn }>Cancel</Text>
                     <Text>Done</Text>
                 </div>
                 <div className="d-flex text-left mt-3 mb-3">

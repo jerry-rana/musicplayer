@@ -105,7 +105,6 @@ const addPlaylist = (state=playlists, {type, playlistName, payload}) => {
         // var match = state[playlistName].findIndex((item) => {
         //     return item.name===payload.name;
         //   })
-
         //   if(match!==-1){
         //     state[playlistName].splice(match, 1)
         //   }else{
